@@ -12,7 +12,7 @@ module parameters
     ! 下标约定: p - polymer, s - solution, b - boundary / phantom
 
     !结构
-    integer, parameter :: n_p=0, n_cell_x=10, n_cell_y=20, n_cell_z=50
+    integer, parameter :: n_p=40, n_cell_x=10, n_cell_y=20, n_cell_z=50
 
     integer n_b, n_s
 
@@ -129,17 +129,17 @@ contains
                 ! 当步数是5的倍数直接z轴加一
                 if(mod(i,5)==0)then
                     x_p(1,i)=x_p(1,i-1)+0
-                    x_p(2,i)=x_p(2,i-1)+1.0
-                    x_p(3,i)=x_p(3,i-1)+0
+                    x_p(2,i)=x_p(2,i-1)+0
+                    x_p(3,i)=x_p(3,i-1)+1.0
                 else
                     x_p(1,i)=x_p(1,i-1)+dx(1,j)
-                    x_p(2,i)=x_p(2,i-1)
-                    x_p(3,i)=x_p(3,i-1)+dx(2,j)
+                    x_p(2,i)=x_p(2,i-1)+dx(2,j)
+                    x_p(3,i)=x_p(3,i-1)
                 endif
 
                 ! 和壁保持距离
                 if((x_p(2,i)<0.and.x_p(2,i)>n_cell_y/2d0.and.abs(x_p(3,i))<=n_cell_z*ratio_z/2d0) &
-                        .or.(x_p(2,i)<n_cell_y*(1d0-ratio_y)/2d0.and.x_p(2,i)>n_cell_y/2d0.and. &
+                        .or.((x_p(2,i)<n_cell_y*(1d0-ratio_y)/2d0 .or. x_p(2,i)>n_cell_y/2d0).and. &
                         ((x_p(3,i)<-n_cell_z*ratio_z/2d0).or.(x_p(3,i)>n_cell_z*ratio_z/2d0)))) then
                     cycle
                 endif
@@ -159,8 +159,8 @@ contains
 
             if (.not. success) then
                 x_p(1,i)=x_p(1,i-1)+0
-                x_p(2,i)=x_p(2,i-1)+1.0
-                x_p(3,i)=x_p(3,i-1)+0
+                x_p(2,i)=x_p(2,i-1)+0
+                x_p(3,i)=x_p(3,i-1)+1.0
             endif
         enddo
 
@@ -255,7 +255,8 @@ contains
         implicit none
         real(8) f(3), U, rx1(3), rx2(3), c, r1, r2
         real(8), parameter :: BEND_b = 10
-
+        rx1(1)=rx1(1)-n_cell_x*nint(rx1(1)/n_cell_x)
+        rx2(1)=rx2(1)-n_cell_x*nint(rx2(1)/n_cell_x)
         rx1(3)=rx1(3)-n_cell_z*nint(rx1(3)/n_cell_z)
         rx2(3)=rx2(3)-n_cell_z*nint(rx2(3)/n_cell_z)
 

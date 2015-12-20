@@ -61,7 +61,7 @@ module parameters
     integer :: thermostat_method, thermostat_interval
     real(8) thermostat_B_parameter, thermostat_A_parameter
 
-    namelist /basic/ radius, gama, density_s, &
+    namelist /basic/ gama, density_s, &
         desk_interval_step, equili_step, equili_interval_step, total_step, output_interval_step, &
         thermostat_method, thermostat_interval, thermostat_B_parameter,thermostat_A_parameter
 
@@ -178,7 +178,7 @@ contains
             i=i+1
             if(i>n_s)exit
             x_s(1,i)=(rand()-5d-1)*n_cell_x
-            x_s(2,i)=(rand()-5d-1)*(n_cell_y+1)
+            x_s(2,i)=(rand()-5d-1)*n_cell_y
             x_s(3,i)=(rand()-5d-1)*n_cell_z
             if(.not. in_pipe(x_s(:,i)))then
                 i=i-1
@@ -682,7 +682,7 @@ contains
             write(output_file,'(I6)')n_p+n_s+n_b
             write(output_file,*)'ITEM:BOX BOUNDS'
             write(output_file,'(2F7.1)')-n_cell_x/2d0,n_cell_x/2d0
-            write(output_file,'(2F7.1)')-1,n_cell_y/2d0+1
+            write(output_file,'(2F7.1)')-n_cell_y/2d0,n_cell_y/2d0+1
             write(output_file,'(2F7.1)')-n_cell_z/2d0,n_cell_z/2d0
             write(output_file,*)'ITEM:ATOMS id type x y z'
 
@@ -824,11 +824,11 @@ contains
         ! 第3类，x2=0
         t(3)=(0-x0(2))/xm(2)
 
-        ! 第4类，x3=-10
-        t(4)=(-10d0-x0(3))/xm(3)
+        ! 第4类，x3=-n_cell_z*ratio_z/2d0
+        t(4)=(-n_cell_z*ratio_z/2d0-x0(3))/xm(3)
 
-        ! 第5类，x3=10
-        t(5)=(10d0-x0(3))/xm(3)
+        ! 第5类，x3=n_cell_z*ratio_z/2d0
+        t(5)=(n_cell_z*ratio_z/2d0-x0(3))/xm(3)
 
         do i=1,5
             xc_list(:,i)=x0+xm*t(i)
@@ -1022,8 +1022,8 @@ contains
         !            enddo
         !        enddo
 
-        do j=0,39
-            do k=0,99
+        do j=0,2*n_cell_y-1
+            do k=0,2*n_cell_z-1
                 sum_grid_v(:,j,k)=sum_grid_v(:,j,k)/(step/1)
                 if (n_grid(j,k)==1) then
                     n_grid(j,k)=0

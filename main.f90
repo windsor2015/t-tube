@@ -959,7 +959,8 @@ contains
         if(mod(cur_step,desk_interval_step)==0)then
             call Ek_T(EK_scaled, T_scaled)
             call get_time(t)
-            write(*,'(I7,6F12.3)') cur_step,U_BEND,U_FENE,U_LJ,U,T_scaled,t
+            write(*,'(I7,6F12.3)') cur_step,U_BEND,U_FENE,U_LJ,U,T_scaled,t-time0
+            time0=t
         endif
 
         call output(output_file,cur_step,interval_step)
@@ -971,8 +972,8 @@ contains
         real(8) t
         integer(8) t1, clock_rate, clock_max
         call system_clock(t1,clock_rate,clock_max)
-        t=1d0*(t1-time0)/clock_rate
-        time0=t1
+        t=1d0*t1/clock_rate
+        !time0=t1
     end subroutine
 
     subroutine stat_velocity(cur_step)
@@ -1041,6 +1042,15 @@ contains
         n_grid=0
     end subroutine
 
+   subroutine output_date()
+        implicit none
+        integer d(8)
+
+        call date_and_time(values=d)
+        write (*,'(I5,A,I2.2,A,I2.2,A,I2.2,A,I2.2,A,I2.2,A,I3.3)') &
+            d(1),'-',d(2),'-',d(3),'/',d(5),':',d(6),':',d(7),'.',d(8)
+    end subroutine
+
 end module parameters
 
 program Poisellie_field
@@ -1048,7 +1058,7 @@ program Poisellie_field
     implicit none
     integer :: cur_step,output_file,energy_file,production_file,velocity_file,coord_velo_file
     integer i,j,k,h_p
-    real(8) :: EK_scaled,T_scaled,r,t
+    real(8) :: EK_scaled,T_scaled,r,t,t0
 
     output_file=912
     energy_file=913
@@ -1059,7 +1069,11 @@ program Poisellie_field
 
     call readin()
 
-    call get_time(t)
+    call get_time(t0)
+    time0=t0
+    write(*,*) 'begin at'
+    call output_date()
+    write(*,*)
 
     box_size = [n_cell_x, n_cell_y, n_cell_z]
     box_size_unit=1.0
@@ -1139,6 +1153,11 @@ program Poisellie_field
     close(production_file)
     close(velocity_file)
     close(coord_velo_file)
+    write(*,*)
+    write(*,*) 'end at'
+    call output_date()
+    call get_time(t)
+    write(*,*) 'elapsed time is', t-t0, 's'
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 end program Poisellie_field
